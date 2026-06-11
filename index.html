@@ -1,69 +1,194 @@
+html
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Smart Translator + FAQ Bot</title>
+<title>AI Translator Model</title>
 
 <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 
 <style>
 
-/* ================= UI ================= */
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:Arial,sans-serif;
+}
 
 body{
-    font-family: Arial;
-    background: linear-gradient(135deg,#74ebd5,#ACB6E5);
-    text-align:center;
-    padding:20px;
+background:linear-gradient(135deg,#07122f,#133c8b);
+color:white;
+min-height:100vh;
+}
+
+/* START SCREEN */
+
+#startScreen{
+height:100vh;
+display:flex;
+flex-direction:column;
+justify-content:center;
+align-items:center;
+text-align:center;
+padding:20px;
+}
+
+.robot{
+font-size:80px;
+margin-bottom:10px;
+}
+
+.title{
+font-size:60px;
+font-weight:bold;
+color:#6ea8ff;
+line-height:1.1;
+}
+
+.desc{
+max-width:650px;
+margin-top:20px;
+font-size:18px;
+color:#d6d6d6;
+line-height:1.6;
+}
+
+.startBtn{
+margin-top:30px;
+padding:15px 40px;
+font-size:22px;
+background:#12264f;
+border:none;
+border-radius:12px;
+color:white;
+cursor:pointer;
+}
+
+.startBtn:hover{
+background:#1c3d78;
+}
+
+/* FEATURE SCREEN */
+
+#featureScreen{
+display:none;
+height:100vh;
+justify-content:center;
+align-items:center;
+flex-direction:column;
+}
+
+.featureTitle{
+font-size:50px;
+color:#6ea8ff;
+margin-bottom:30px;
+}
+
+.featureBtn{
+width:320px;
+padding:18px;
+margin:10px;
+font-size:22px;
+border:none;
+border-radius:15px;
+background:#0b183a;
+color:white;
+cursor:pointer;
+}
+
+.featureBtn:hover{
+background:#163163;
+}
+
+/* APP */
+
+#mainApp{
+display:none;
+padding:20px;
 }
 
 .container{
-    max-width:900px;
-    margin:auto;
-    background:white;
-    padding:20px;
-    border-radius:15px;
-    margin-bottom:20px;
+max-width:1000px;
+margin:auto;
+background:rgba(255,255,255,.08);
+backdrop-filter:blur(10px);
+padding:25px;
+border-radius:20px;
+}
+
+h2{
+text-align:center;
+margin-bottom:20px;
 }
 
 textarea{
-    width:90%;
-    height:120px;
-    margin:10px;
-    padding:10px;
+width:100%;
+height:140px;
+padding:12px;
+border:none;
+border-radius:10px;
+margin-top:10px;
+margin-bottom:10px;
+resize:none;
 }
 
-select, button{
-    padding:10px;
-    margin:5px;
-    border-radius:6px;
+select{
+width:100%;
+padding:12px;
+border:none;
+border-radius:10px;
+margin-top:10px;
 }
 
-button{
-    background:#4a90e2;
-    color:white;
-    border:none;
-    cursor:pointer;
+.btn-group{
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
+gap:10px;
+margin-top:15px;
 }
 
-/* DARK MODE */
-.dark{
-    background:#1e1e1e;
-    color:white;
+button.action{
+padding:12px;
+border:none;
+border-radius:10px;
+background:#38bdf8;
+color:white;
+font-weight:bold;
+cursor:pointer;
 }
 
-.dark .container{
-    background:#2c2c2c;
+button.action:hover{
+background:#0ea5e9;
+}
+
+#faqBox{
+display:none;
+margin-top:20px;
 }
 
 #chatbox{
-    border:1px solid #ccc;
-    height:250px;
-    overflow:auto;
-    padding:10px;
-    text-align:left;
+height:250px;
+overflow:auto;
+background:rgba(0,0,0,.2);
+padding:10px;
+border-radius:10px;
+margin-bottom:10px;
+}
+
+input{
+width:100%;
+padding:12px;
+border:none;
+border-radius:10px;
+margin-bottom:10px;
+}
+
+.backBtn{
+margin-bottom:15px;
+background:#ef4444 !important;
 }
 
 </style>
@@ -71,59 +196,135 @@ button{
 
 <body>
 
-<!-- ================= TRANSLATOR ================= -->
+<!-- START -->
+
+<div id="startScreen">
+
+<div class="robot">🤖</div>
+
+<div class="title">
+AI Translator<br>
+Model
+</div>
+
+<p class="desc">
+Smart AI Translator with Translation,
+Voice Input, OCR Image to Text,
+Emoji Converter and Text-to-Speech.
+</p>
+
+<button class="startBtn" onclick="showFeatures()">
+🚀 Start
+</button>
+
+</div>
+
+<!-- FEATURES -->
+
+<div id="featureScreen">
+
+<div class="featureTitle">
+Select Feature
+</div>
+
+<button class="featureBtn" onclick="openTranslator()">
+🌐 Text Translator
+</button>
+
+<button class="featureBtn" onclick="emojiToText()">
+😊 Emoji To Text
+</button>
+
+<button class="featureBtn" onclick="openOCR()">
+📷 Image To Text
+</button>
+
+<button class="featureBtn" onclick="location.reload()">
+🚪 Exit
+</button>
+
+</div>
+
+<!-- MAIN APP -->
+
+<div id="mainApp">
 
 <div class="container">
 
+<button class="action backBtn"
+onclick="goBack()">
+⬅ Back
+</button>
+
 <h2>🌐 Smart Translator</h2>
 
-<textarea id="inputText" placeholder="Enter text"></textarea>
-
-<br>
+<textarea
+id="inputText"
+placeholder="Enter text here...">
+</textarea>
 
 <select id="fromLang">
 <option value="en">English</option>
 <option value="ur">Urdu</option>
 <option value="hi">Hindi</option>
+<option value="fr">French</option>
+<option value="ar">Arabic</option>
 </select>
 
 <select id="toLang">
 <option value="ur">Urdu</option>
 <option value="en">English</option>
 <option value="hi">Hindi</option>
+<option value="fr">French</option>
+<option value="ar">Arabic</option>
 </select>
 
-<br>
+<div class="btn-group">
 
-<button onclick="translateText()">Translate</button>
-<button onclick="swapLanguages()">Swap</button>
-<button onclick="emojiToText()">Emoji</button>
-<button onclick="openOCR()">OCR</button>
-<button onclick="startVoice()">Voice</button>
-<button onclick="downloadText()">Download</button>
+<button class="action"
+onclick="translateText()">
+🌐 Translate
+</button>
 
-<br>
+<button class="action"
+onclick="swapLanguages()">
+🔁 Swap
+</button>
 
-<button onclick="speakText()">Speak</button>
-<button onclick="copyText()">Copy</button>
-<button onclick="clearAll()">Clear</button>
-<button onclick="toggleDarkMode()">Dark Mode</button>
+<button class="action"
+onclick="startVoice()">
+🎤 Voice
+</button>
 
-<h3>Output</h3>
-<textarea id="outputText" readonly></textarea>
+<button class="action"
+onclick="speakText()">
+🔊 Speak
+</button>
+
+<button class="action"
+onclick="copyText()">
+📋 Copy
+</button>
+
+<button class="action"
+onclick="downloadText()">
+⬇ Download
+</button>
+
+<button class="action"
+onclick="clearAll()">
+🗑 Clear
+</button>
 
 </div>
 
-<!-- ================= FAQ CHATBOT ================= -->
+<textarea
+id="outputText"
+readonly
+placeholder="Output...">
+</textarea>
 
-<div class="container">
-
-<h2>🤖 FAQ Chatbot</h2>
-
-<div id="chatbox"></div>
-
-<input id="userInput" type="text" placeholder="Ask question..." style="width:70%; padding:10px;">
-<button onclick="sendMessage()">Send</button>
+</div>
 
 </div>
 
