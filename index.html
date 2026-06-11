@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Smart Translator + FAQ Bot</title>
+
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+
+<style>
+
+/* ================= UI ================= */
+
+body{
+    font-family: Arial;
+    background: linear-gradient(135deg,#74ebd5,#ACB6E5);
+    text-align:center;
+    padding:20px;
+}
+
+.container{
+    max-width:900px;
+    margin:auto;
+    background:white;
+    padding:20px;
+    border-radius:15px;
+    margin-bottom:20px;
+}
+
+textarea{
+    width:90%;
+    height:120px;
+    margin:10px;
+    padding:10px;
+}
+
+select, button{
+    padding:10px;
+    margin:5px;
+    border-radius:6px;
+}
+
+button{
+    background:#4a90e2;
+    color:white;
+    border:none;
+    cursor:pointer;
+}
+
+/* DARK MODE */
+.dark{
+    background:#1e1e1e;
+    color:white;
+}
+
+.dark .container{
+    background:#2c2c2c;
+}
+
+#chatbox{
+    border:1px solid #ccc;
+    height:250px;
+    overflow:auto;
+    padding:10px;
+    text-align:left;
+}
+
+</style>
+</head>
+
+<body>
+
+<!-- ================= TRANSLATOR ================= -->
+
+<div class="container">
+
+<h2>🌐 Smart Translator</h2>
+
+<textarea id="inputText" placeholder="Enter text"></textarea>
+
+<br>
+
+<select id="fromLang">
+<option value="en">English</option>
+<option value="ur">Urdu</option>
+<option value="hi">Hindi</option>
+</select>
+
+<select id="toLang">
+<option value="ur">Urdu</option>
+<option value="en">English</option>
+<option value="hi">Hindi</option>
+</select>
+
+<br>
+
+<button onclick="translateText()">Translate</button>
+<button onclick="swapLanguages()">Swap</button>
+<button onclick="emojiToText()">Emoji</button>
+<button onclick="openOCR()">OCR</button>
+<button onclick="startVoice()">Voice</button>
+<button onclick="downloadText()">Download</button>
+
+<br>
+
+<button onclick="speakText()">Speak</button>
+<button onclick="copyText()">Copy</button>
+<button onclick="clearAll()">Clear</button>
+<button onclick="toggleDarkMode()">Dark Mode</button>
+
+<h3>Output</h3>
+<textarea id="outputText" readonly></textarea>
+
+</div>
+
+<!-- ================= FAQ CHATBOT ================= -->
+
+<div class="container">
+
+<h2>🤖 FAQ Chatbot</h2>
+
+<div id="chatbox"></div>
+
+<input id="userInput" type="text" placeholder="Ask question..." style="width:70%; padding:10px;">
+<button onclick="sendMessage()">Send</button>
+
+</div>
+
+<script src="app.js"></script>
+
+</body>
+</html>
