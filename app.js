@@ -1,113 +1,149 @@
-// ========================
-// HISTORY (LOCAL STORAGE)
-// ========================
-let historyList = JSON.parse(localStorage.getItem("history")) || [];
+javascript
+function showFeatures() {
+    document.getElementById("startScreen").style.display = "none";
+    document.getElementById("featureScreen").style.display = "flex";
+}
 
-renderHistory();
+function openTranslator() {
+    document.getElementById("featureScreen").style.display = "none";
+    document.getElementById("mainApp").style.display = "block";
+}
+function goBack() {
+    document.getElementById("mainApp").style.display = "none";
+    document.getElementById("featureScreen").style.display = "flex";
+}
 
+// ================= TRANSLATION =================
 
-// ========================
-// TRANSLATION
-// ========================
-async function translateText(){
+async function translateText() {
 
-    let text = document.getElementById("inputText").value;
-    let from = document.getElementById("fromLang").value;
-    let to = document.getElementById("toLang").value;
+    let text = document.getElementById("inputText").value.trim();
 
-    if(text.trim()===""){
-        alert("Enter some text");
+    if (!text) {
+        alert("Please enter text");
         return;
     }
 
-    let url =
-    `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=${from}|${to}`;
+    let from = document.getElementById("fromLang").value;
+    let to = document.getElementById("toLang").value;
 
-    try{
+    document.getElementById("outputText").value =
+        "Translating...";
 
-        let response = await fetch(url);
-        let data = await response.json();
+    try {
 
-        let result = data.responseData.translatedText;
+        let url =
+            `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=${from}|${to}`;
 
-        document.getElementById("outputText").value = result;
+        let res = await fetch(url);
+        let data = await res.json();
 
-        // SAVE HISTORY
-        historyList.push(text + " → " + result);
-        localStorage.setItem("history", JSON.stringify(historyList));
+        document.getElementById("outputText").value =
+            data.responseData.translatedText;
 
-        renderHistory();
+    } catch (error) {
 
-    } catch(error){
-        alert("Translation Error");
+        document.getElementById("outputText").value =
+            "Translation Failed";
+
     }
 }
 
+// ================= SWAP =================
 
-// ========================
-// RENDER HISTORY
-// ========================
-function renderHistory(){
+function swapLanguages() {
 
-    document.getElementById("history").innerHTML =
-    historyList.map(item => `<li>${item}</li>`).join("");
-}
+    let from =
+        document.getElementById("fromLang");
 
-
-// ========================
-// SWAP
-// ========================
-function swapLanguages(){
-
-    let from = document.getElementById("fromLang");
-    let to = document.getElementById("toLang");
+    let to =
+        document.getElementById("toLang");
 
     let temp = from.value;
+
     from.value = to.value;
     to.value = temp;
 }
 
+// ================= EMOJI =================
 
-// ========================
-// EMOJI TO TEXT
-// ========================
-function emojiToText(){
+function emojiToText() {
 
-    let text = document.getElementById("inputText").value;
+    let text =
+        document.getElementById("inputText").value;
 
-    let result = text
-        .replace(/😀/g,"grinning face")
-        .replace(/😂/g,"laughing face")
-        .replace(/❤️/g,"heart")
-        .replace(/👍/g,"thumbs up");
+    if (!text) {
+        alert("Enter emoji in text box first");
+        openTranslator();
+        return;
+    }
 
-    document.getElementById("outputText").value = result;
+    let result =
+        text
+        .replace(/😀/g, "happy")
+        .replace(/😁/g, "smile")
+        .replace(/😂/g, "laugh")
+        .replace(/🤣/g, "very funny")
+        .replace(/😍/g, "love")
+        .replace(/❤️/g, "heart")
+        .replace(/👍/g, "good")
+        .replace(/🙏/g, "thanks")
+        .replace(/😭/g, "crying")
+        .replace(/🔥/g, "fire");
+
+    openTranslator();
+
+    document.getElementById("outputText").value =
+        result;
 }
 
+// ================= OCR =================
 
-// ========================
-// OCR
-// ========================
-function openOCR(){
+function openOCR() {
 
-    let input = document.createElement("input");
-    input.type="file";
-    input.accept="image/*";
+    let input =
+        document.createElement("input");
 
-    input.onchange = async function(e){
+    input.type = "file";
+    input.accept = "image/*";
+
+    input.onchange = async function (e) {
 
         let file = e.target.files[0];
+
+        if (!file) return;
+
         let reader = new FileReader();
 
-        reader.onload = async function(){
+        reader.onload = async function () {
 
-            document.getElementById("outputText").value = "Processing...";
+            openTranslator();
 
-            const { data:{text} } =
-            await Tesseract.recognize(reader.result,"eng");
+            document.getElementById("outputText").value =
+                "Scanning Image...";
 
-            document.getElementById("inputText").value = text;
-            document.getElementById("outputText").value = text;
+            try {
+
+                const {
+                    data: {
+                        text
+                    }
+                } =
+                await Tesseract.recognize(
+                    reader.result,
+                    "eng"
+                );
+
+                document.getElementById("outputText").value =
+                    text;
+
+            } catch {
+
+                document.getElementById("outputText").value =
+                    "OCR Failed";
+
+            }
+
         };
 
         reader.readAsDataURL(file);
@@ -116,174 +152,122 @@ function openOCR(){
     input.click();
 }
 
+// ================= VOICE =================
 
-// ========================
-// SPEAK
-// ========================
-function speakText(){
+function startVoice() {
 
-    let text = document.getElementById("outputText").value;
+    const SpeechRecognition =
+        window.SpeechRecognition ||
+        window.webkitSpeechRecognition;
 
-    let speech = new SpeechSynthesisUtterance(text);
-    speech.lang="en-US";
+    if (!SpeechRecognition) {
+
+        alert(
+            "Voice recognition not supported in this browser"
+        );
+
+        return;
+    }
+
+    const recognition =
+        new SpeechRecognition();
+
+    recognition.lang = "en-US";
+
+    recognition.start();
+
+    recognition.onresult =
+        function (event) {
+
+            document.getElementById(
+                "inputText"
+            ).value =
+            event.results[0][0].transcript;
+        };
+}
+
+// ================= SPEAK =================
+
+function speakText() {
+
+    let text =
+        document.getElementById(
+            "outputText"
+        ).value;
+
+    if (!text) return;
+
+    let speech =
+        new SpeechSynthesisUtterance(text);
 
     speechSynthesis.speak(speech);
 }
 
+// ================= COPY =================
 
-// ========================
-// COPY
-// ========================
-function copyText(){
+async function copyText() {
 
-    let text = document.getElementById("outputText").value;
-    navigator.clipboard.writeText(text);
+    let text =
+        document.getElementById(
+            "outputText"
+        ).value;
 
-    alert("Copied!");
+    if (!text) return;
+
+    await navigator.clipboard.writeText(text);
+
+    alert("Copied Successfully");
 }
 
+// ================= CLEAR =================
 
-// ========================
-// CLEAR
-// ========================
-function clearAll(){
+function clearAll() {
 
-    document.getElementById("inputText").value="";
-    document.getElementById("outputText").value="";
+    document.getElementById(
+        "inputText"
+    ).value = "";
+
+    document.getElementById(
+        "outputText"
+    ).value = "";
 }
 
+// ================= DOWNLOAD =================
 
-// ========================
-// VOICE INPUT
-// ========================
-function startVoice(){
+function downloadText() {
 
-    const SpeechRecognition =
-    window.SpeechRecognition || window.webkitSpeechRecognition;
+    let text =
+        document.getElementById(
+            "outputText"
+        ).value;
 
-    if(!SpeechRecognition){
-        alert("Not supported");
-        return;
-    }
+    if (!text) return;
 
-    const recognition = new SpeechRecognition();
-    recognition.lang = "en-US";
-    recognition.start();
+    let blob =
+        new Blob([text], {
+            type: "text/plain"
+        });
 
-    recognition.onresult = function(event){
+    let a =
+        document.createElement("a");
 
-        document.getElementById("inputText").value =
-        event.results[0][0].transcript;
-    };
-}
+    a.href =
+        URL.createObjectURL(blob);
 
+    a.download =
+        "translation.txt";
 
-// ========================
-// DARK MODE
-// ========================
-function toggleDarkMode(){
+    a.click();
+    chatbox.innerHTML +=
+        `<div><b>You:</b> ${input}</div>`;
 
-    document.body.classList.toggle("dark-mode");
-}
+    chatbox.innerHTML +=
+        `<div><b>Bot:</b> ${getBestMatch(input)}</div><hr>`;
 
+    document.getElementById(
+        "userInput"
+    ).value = "";
 
-// ========================
-// DOWNLOAD TRANSLATION
-// ========================
-function downloadText(){
-
-    let text = document.getElementById("outputText").value;
-
-    let blob = new Blob([text], {type:"text/plain"});
-    let link = document.createElement("a");
-
-    link.href = URL.createObjectURL(blob);
-    link.download = "translation.txt";
-
-    link.click();
-}
-// ========================
-// FAQ DATASET (COLLECT FAQs)
-// ========================
-const faqs = [
-    {
-        question: "What is this project?",
-        answer: "This is a Smart Translator with OCR, Voice and Emoji support."
-    },
-    {
-        question: "How does OCR work?",
-        answer: "It extracts text from images using Tesseract.js."
-    },
-    {
-        question: "Is voice input available?",
-        answer: "Yes, using Web Speech API."
-    },
-    {
-        question: "Is internet required?",
-        answer: "Yes, translation API requires internet."
-    }
-];
-
-
-// ========================
-// TEXT PREPROCESSING (BASIC NLP)
-// ========================
-function cleanText(text){
-    return text.toLowerCase()
-        .replace(/[^\w\s]/gi,'')
-        .trim();
-}
-
-
-// ========================
-// COSINE SIMILARITY (SIMPLE VERSION)
-// ========================
-function similarity(str1, str2){
-
-    let words1 = cleanText(str1).split(" ");
-    let words2 = cleanText(str2).split(" ");
-
-    let common = words1.filter(word => words2.includes(word));
-
-    return common.length / (Math.sqrt(words1.length * words2.length));
-}
-
-
-// ========================
-// GET BEST MATCH
-// ========================
-function getBestMatch(userQuestion){
-
-    let bestScore = 0;
-    let bestAnswer = "Sorry, I don't understand.";
-
-    faqs.forEach(faq => {
-
-        let score = similarity(userQuestion, faq.question);
-
-        if(score > bestScore){
-            bestScore = score;
-            bestAnswer = faq.answer;
-        }
-
-    });
-
-    return bestAnswer;
-}
-function sendMessage(){
-
-    let input = document.getElementById("userInput").value;
-    let chatbox = document.getElementById("chatbox");
-
-    if(input.trim() === "") return;
-
-    chatbox.innerHTML += `<div><b>You:</b> ${input}</div>`;
-
-    let response = getBestMatch(input);
-
-    chatbox.innerHTML += `<div><b>Bot:</b> ${response}</div><hr>`;
-
-    document.getElementById("userInput").value = "";
-
-    chatbox.scrollTop = chatbox.scrollHeight;
+    chatbox.scrollTop =
+        chatbox.scrollHeight;
 }
